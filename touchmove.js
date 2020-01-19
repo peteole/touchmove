@@ -3,6 +3,12 @@ class Point {
         this.x = x;
         this.y = y;
     }
+    distanceTo(p=new Point()){
+        return Math.sqrt((p.x-this.x)*(p.x-this.x)+(p.y-this.y)*(p.y-this.y));
+    }
+}
+function distance(A,B){
+    return Math.sqrt((A.x-B.x)*(A.x-B.x)+(A.y-B.y)*(A.y-B.y));
 }
 class Mover{
     constructor(element=document.createElement("div"),tarX,tarY,x,y){
@@ -26,12 +32,13 @@ class SwipeElementItem {
         this.currentVY = 0;
         this.currentX = 0;
         this.currentY = 0;
-
+        this.sliding=false;
         this.onMove = function (swipeControler = new SwipeElementItem(null)) {
             SwipeElementItem.moveElement(swipeControler.currentX,swipeControler.currentY,swipeControler.swipeElement);
         }
         this.lastMove = new Point(0, 0);
         this.lastUpdate = new Date().getTime();
+        this.initialTime=new Date().getTime();
         this.pointToMove = function (point = new Point(0, 0)) {
             return point;
         }
@@ -82,14 +89,21 @@ class SwipeElementItem {
             this.swipeElement.removeEventListener('mousedown', this.handleGestureStart, true);
         }
     }
+    abortMove(){
+        this.abort=true;
+    }
     getTimeStep() {
         var currentTime = new Date().getTime();
         var toReturn = currentTime - this.lastUpdate;
         this.lastUpdate = currentTime;
         return toReturn;
     }
+    getTimeMoving(){
+        return new Date().getTime()-this.initialTime;
+    }
     // Handle the start of gestures
     handleGestureStart(evt) {
+        this.initialTime=new Date().getTime();
         this.onMoveStart(this);
         evt.preventDefault();
 
@@ -106,6 +120,7 @@ class SwipeElementItem {
         }
         //document.style.touchaction="none";
         this.initialTouchPos = this.getGesturePointFromEvent(evt);
+        this.lastTouchPos=this.initialTouchPos;
         this.swipeElement.style.transition = 'initial';
     }
     /* // [END handle-start-gesture] */
@@ -116,10 +131,14 @@ class SwipeElementItem {
     handleGestureMove(evt) {
         evt.preventDefault();
 
+        if(this.abort){
+            this.handleGestureEnd(evt);
+            this.abort=false;
+        }
         if (!this.initialTouchPos) {
+            //this.handleGestureEnd(evt);
             return;
         }
-
         this.lastTouchPos = this.getGesturePointFromEvent(evt);
 
         if (this.rafPending) {
@@ -135,6 +154,7 @@ class SwipeElementItem {
     /* // [START handle-end-gesture] */
     // Handle end gestures
     handleGestureEnd(evt) {
+        document.body.style.touchaction="default";
         if(!this.initialTouchPos){
             // Remove Event Listeners
             if (window.PointerEvent) {
@@ -164,13 +184,13 @@ class SwipeElementItem {
             document.removeEventListener('mouseup', this.handleGestureEnd, true);
         }
         document.body.style.touchaction="default";
-        this.updateSwipeRestPosition();
         this.onMoveEnd(this,this.lastTouchPos);
+        this.updateSwipeRestPosition();
         this.initialTouchPos = null;
     }
     /* // [END handle-end-gesture] */
 
-    moveElementWithoutTouch(controlPoint = new Point(0, 0)) {
+    moveElementWithoutTouch(controlPoint = new Point(0, 0), draw=true) {
         var move=this.pointToMove(controlPoint);
         /*var newXTransform = (move.x) + 'px';
         var newYTransform = (move.y) + 'px';
@@ -188,7 +208,29 @@ class SwipeElementItem {
         this.currentX=move.x;
         this.currentY=move.y;
         this.rafPending = false;
-        this.onMove(this);
+        if(draw){
+            this.onMove(this);
+        }
+    }
+    moveElementXWithoutTouch(newX=0,draw=true){
+        var move=this.pointToMove(new Point(newX,this.lastControlYRest));
+        this.lastControlXRest = newX;
+        this.currentX=move.x;
+        this.currentY=move.y;
+        this.rafPending = false;
+        if(draw){
+            this.onMove(this);
+        }
+    }
+    moveElementYWithoutTouch(newY=0,draw=true){
+        var move=this.pointToMove(new Point(this.lastControlXRest,newY));
+        this.lastControlYRest = newY;
+        this.currentX=move.x;
+        this.currentY=move.y;
+        this.rafPending = false;
+        if(draw){
+            this.onMove(this);
+        }
     }
     static animateFunction(f=function(tPart=0){},t=100){
         this.timeLimit=new Date().getTime()+t;
@@ -198,6 +240,8 @@ class SwipeElementItem {
             if(leftTimePart>0){
                 f(leftTimePart);
                 window.requestAnimationFrame(this.g);
+            }else{
+                f(0);
             }
         }.bind(this);
         window.requestAnimationFrame(this.g);
@@ -207,10 +251,19 @@ class SwipeElementItem {
         this.lastFix=new Point(this.currentX,this.currentY);
         var f=function(tPart=0){
             this.moveElementWithoutTouch(new Point(tPart*this.lastFix.x+(1-tPart)*this.target.x,tPart*this.lastFix.y+(1-tPart)*this.target.y));
+            if(tPart==0){
+                this.sliding=false;
+            }
         }.bind(this);
+        this.sliding=true;
         SwipeElementItem.animateFunction(f,t);
+
+        //this.abortMove();
     }
     updateSwipeRestPosition() {
+        if(this.lastTouchPos==null){
+            return;
+        }
         var differenceInX = this.initialTouchPos.x - this.lastTouchPos.x;
         this.lastControlXRest = this.lastControlXRest - differenceInX;
 

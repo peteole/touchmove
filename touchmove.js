@@ -192,17 +192,6 @@ class SwipeElementItem {
 
     moveElementWithoutTouch(controlPoint = new Point(0, 0), draw=true) {
         var move=this.pointToMove(controlPoint);
-        /*var newXTransform = (move.x) + 'px';
-        var newYTransform = (move.y) + 'px';
-
-        var transformStyle = 'translate(' + newXTransform + ", " + newYTransform + ')';
-        this.swipeElement.style.webkitTransform = transformStyle;
-        this.swipeElement.style.MozTransform = transformStyle;
-        this.swipeElement.style.msTransform = transformStyle;
-        this.swipeElement.style.transform = transformStyle;*/
-
-        //adapt control point to new position
-        //var controlPoint = this.moveToPoint(move);
         this.lastControlXRest = controlPoint.x;
         this.lastControlYRest = controlPoint.y;
         this.currentX=move.x;
@@ -251,6 +240,26 @@ class SwipeElementItem {
         this.lastFix=new Point(this.currentX,this.currentY);
         var f=function(tPart=0){
             this.moveElementWithoutTouch(new Point(tPart*this.lastFix.x+(1-tPart)*this.target.x,tPart*this.lastFix.y+(1-tPart)*this.target.y));
+            if(tPart==0){
+                this.sliding=false;
+            }
+        }.bind(this);
+        this.sliding=true;
+        SwipeElementItem.animateFunction(f,t);
+
+        //this.abortMove();
+    }
+
+    //decelerate from current speed until arriving at specified point
+    breakToPoint(p=new Point(0,0),t=100){
+        this.target=p;
+        this.lastFix=new Point(this.currentX,this.currentY);
+        var lastSpeed=Math.sqrt(this.currentVX*this.currentVX+this.currentVY*this.currentVY);
+        var dist=this.lastFix.distanceTo(p);
+        this.v0=lastSpeed/dist;
+        var f=function(tPart=0){
+            var sPart=this.v0*tPart+(1-this.v0)*tPart*tPart
+            this.moveElementWithoutTouch(new Point(sPart*this.lastFix.x+(1-sPart)*this.target.x,sPart*this.lastFix.y+(1-sPart)*this.target.y));
             if(tPart==0){
                 this.sliding=false;
             }

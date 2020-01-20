@@ -121,13 +121,21 @@ class SwipeElementItem {
         //document.style.touchaction="none";
         this.initialTouchPos = this.getGesturePointFromEvent(evt);
         this.lastTouchPos=this.initialTouchPos;
-        if(isNaN(this.currentX)){
+        if(isNaN(this.lastMove.x)){
+            this.lastMove.x=0;
+        }
+        if(isNaN(this.lastMove.y)){
+            this.lastMove.y=0;
+        }
+        if(isNaN(this.currentX)||isNaN(this.lastControlXRest)){
             this.currentX=0;
             this.currentVX=0;
+            this.lastControlXRest=0;
         }
-        if(isNaN(this.currentY)){
+        if(isNaN(this.currentY)||isNaN(this.lastControlYRest)){
             this.currentY=0;
             this.currentVY=0;
+            this.lastControlYRest=0;
         }
         this.swipeElement.style.transition = 'initial';
     }

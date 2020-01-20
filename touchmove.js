@@ -274,6 +274,10 @@ class SwipeElementItem {
         var lastSpeed=Math.sqrt(this.currentVX*this.currentVX+this.currentVY*this.currentVY);
         var dist=this.lastFix.distanceTo(p);
         this.v0=lastSpeed/dist;
+        if(isNaN(this.v0)){
+            this.v0=0;
+            return;
+        }
         var f=function(tPart=0){
             var sPart=this.v0*tPart+(1-this.v0)*tPart*tPart
             this.moveElementWithoutTouch(new Point(sPart*this.lastFix.x+(1-sPart)*this.target.x,sPart*this.lastFix.y+(1-sPart)*this.target.y));

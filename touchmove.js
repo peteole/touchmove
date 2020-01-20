@@ -123,9 +123,11 @@ class SwipeElementItem {
         this.lastTouchPos=this.initialTouchPos;
         if(isNaN(this.currentX)){
             this.currentX=0;
+            this.currentVX=0;
         }
         if(isNaN(this.currentY)){
             this.currentY=0;
+            this.currentVY=0;
         }
         this.swipeElement.style.transition = 'initial';
     }
@@ -356,8 +358,8 @@ class SwipeElementItem {
         if (dt == 0) {
             return;
         }
-        this.currentVX += ((newMove.x - this.lastMove.x) / dt - this.currentVX);// * (1 - 0*Math.pow(0.99, dt));
-        this.currentVY += ((newMove.y - this.lastMove.y) / dt - this.currentVY);// * (1 - 0*Math.pow(0.99, dt));
+        this.currentVX = ((newMove.x - this.lastMove.x) / dt);// * (1 - 0*Math.pow(0.99, dt));
+        this.currentVY = ((newMove.y - this.lastMove.y) / dt );// * (1 - 0*Math.pow(0.99, dt));
         this.lastMove = newMove;
     }
     /* // [END on-anim-frame] */

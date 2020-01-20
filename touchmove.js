@@ -121,6 +121,12 @@ class SwipeElementItem {
         //document.style.touchaction="none";
         this.initialTouchPos = this.getGesturePointFromEvent(evt);
         this.lastTouchPos=this.initialTouchPos;
+        if(isNaN(this.currentX)){
+            this.currentX=0;
+        }
+        if(isNaN(this.currentY)){
+            this.currentY=0;
+        }
         this.swipeElement.style.transition = 'initial';
     }
     /* // [END handle-start-gesture] */

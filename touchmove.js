@@ -140,6 +140,7 @@ class SwipeElementItem {
             return;
         }
         this.lastTouchPos = this.getGesturePointFromEvent(evt);
+        this.updateV(new Point(this.currentX, this.currentY));
 
         if (this.rafPending) {
             return;
@@ -317,7 +318,6 @@ class SwipeElementItem {
         this.swipeElement.style.transform = transformStyle;*/
         //SwipeElementItem.moveElement(move.x,move.y,this.swipeElement);
         this.onMove(this);
-        this.updateV(new Point(this.currentX, this.currentY));
         this.rafPending = false;
     }
     static moveElement(x = 0, y = 0, el) {
@@ -350,8 +350,8 @@ class SwipeElementItem {
         if (dt == 0) {
             return;
         }
-        this.currentVX += ((newMove.x - this.lastMove.x) / dt - this.currentVX) * (1 - 0*Math.pow(0.99, dt));
-        this.currentVY += ((newMove.y - this.lastMove.y) / dt - this.currentVY) * (1 - 0*Math.pow(0.99, dt));
+        this.currentVX += ((newMove.x - this.lastMove.x) / dt - this.currentVX);// * (1 - 0*Math.pow(0.99, dt));
+        this.currentVY += ((newMove.y - this.lastMove.y) / dt - this.currentVY);// * (1 - 0*Math.pow(0.99, dt));
         this.lastMove = newMove;
     }
     /* // [END on-anim-frame] */
